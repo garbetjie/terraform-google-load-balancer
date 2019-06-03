@@ -9,3 +9,7 @@ variable "mapping" {
 variable "health_checks" {
   type = list
 }
+
+variable "default_mapping" {
+  type = "string"
+}

@@ -1,5 +1,5 @@
-resource google_compute_target_http_proxy default {
-  name = format("%s-http-proxy", var.name)
+resource google_compute_target_http_proxy lb {
+  name = format("%s-http", var.name)
   url_map = google_compute_url_map.default.self_link
 }
 

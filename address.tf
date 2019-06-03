@@ -1,3 +1,3 @@
-resource google_compute_global_address address {
-  name = format("%s-lb", var.name)
+resource google_compute_global_address lb {
+  name = format("%s-load-balancer", var.name)
 }

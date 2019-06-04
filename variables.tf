@@ -2,7 +2,7 @@ variable "name" {
   type = string
 }
 
-variable "mapping" {
+variable "routing" {
   type = list
 }
 
@@ -10,13 +10,13 @@ variable "health_checks" {
   type = list
 }
 
-variable "default_mapping" {
+variable "default_route" {
   type = number
 }
 
 locals {
   backend_services = [
-    for index, item in var.mapping: {
+    for index, item in var.routing: {
       name = format("%s-%s", var.name, index)
       targets = item.targets
       index = index
@@ -26,7 +26,7 @@ locals {
   ]
 
   backend_buckets = [
-    for index, item in var.mapping: {
+    for index, item in var.routing: {
       name = format("%s-%s", var.name, index)
       index = index
       target = item.targets[0]
@@ -49,6 +49,6 @@ locals {
   default_backend_service = [
     for item in concat(local.backend_services, local.backend_buckets):
       local.backend_service_index[item.name]
-    if item.index == var.default_mapping
+    if item.index == var.default_route
   ][0]
 }

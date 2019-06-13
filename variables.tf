@@ -14,6 +14,16 @@ variable "default_route" {
   type = number
 }
 
+variable "address" {
+  type = string
+  default = ""
+}
+
+variable "reserve_address" {
+  type = bool
+  default = true
+}
+
 locals {
   backend_services = [
     for index, item in var.routing: {
@@ -51,4 +61,6 @@ locals {
       local.backend_service_index[item.name]
     if item.index == var.default_route
   ][0]
+
+  address = var.reserve_address ? google_compute_global_address.lb[0].address : var.address
 }

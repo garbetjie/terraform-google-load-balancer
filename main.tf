@@ -37,6 +37,8 @@ resource google_compute_url_map url_map {
       path_matcher = host_rule.value.path_matcher
     }
   }
+
+  depends_on = [google_compute_backend_service.backend_service, google_compute_backend_bucket.backend_bucket]
 }
 
 resource google_compute_backend_service backend_service {

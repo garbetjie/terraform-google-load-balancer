@@ -131,10 +131,6 @@ all hosts for the buckets and services need to be set to empty lists.
 
 When this change has been applied, the load balancer can be removed.
 
-**Please note:** You _will_ receive an error when removing the load balancer, where the backend service or bucket that
-is set to be the default will not be removed (as it will still be in use by the load balancer). Simply re-planning &
-applying your configuration after this should resolve it. 
-
 
 ## Inputs
 

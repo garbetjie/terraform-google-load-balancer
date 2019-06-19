@@ -3,9 +3,10 @@ variable "name" {
   description = "Name of the load balancer (as displayed in the Google Cloud Console)."
 }
 
-variable "health_checks" {
-  type = list
-  description = "Health checks to use on the backend services, to determine health of the service. Can only contain one health check."
+variable "default_health_check" {
+  type = string
+  default = null
+  description = "Default health check to use on the backend services, to determine health of the service. This health check is used if no health check is specified on a backend service."
 }
 
 variable "default_backend" {
@@ -49,6 +50,7 @@ locals {
       name = format("%s-service-%02d", var.name, index + 1)
       hosts = lookup(item, "hosts", [])
       groups = item.groups
+      health_check = lookup(item, "health_check", var.default_health_check)
     }
   ]
 

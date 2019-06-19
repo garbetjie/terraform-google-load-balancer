@@ -42,7 +42,7 @@ resource google_compute_url_map url_map {
 resource google_compute_backend_service backend_service {
   count = length(local.backend_services)
   name = local.backend_services[count.index].name
-  health_checks = var.health_checks
+  health_checks = [local.backend_services[count.index].health_check]
 
   dynamic "backend" {
     for_each = local.backend_services[count.index].groups

@@ -2,98 +2,92 @@ variable "name" {
   type = string
 }
 
-variable "routing" {
-  type = list
-}
-
 variable "health_checks" {
   type = list
 }
 
-variable "default_route" {
-  type = number
+variable "default_backend" {
+  type = list
 }
 
 variable "address" {
   type = string
   description = "IP address to assign to the load balancer."
 }
-
-variable "reserve_address" {
-  type = bool
-  default = true
+variable "services" {
+  type = list
+  default = []
 }
 
+variable "buckets" {
+  type = list
+  default = []
+}
+
+
 locals {
-  default_service_name = [
-    for item in concat(local.backend_services, local.backend_buckets):
-      item.name
-    if item.index == var.default_route
-  ][0]
-
-  default_service_link = [
-    for item in concat(google_compute_backend_bucket.backend_bucket.*, google_compute_backend_service.backend_service.*):
-      item.self_link
-    if item.name == local.default_service_name
-  ][0]
-
-  service_to_hosts_map = {
-    for index, item in var.routing:
-      format("%s-%s", var.name, substr(sha256(jsonencode(sort(item.hosts))), 0, 8)) => item.hosts
-  }
-
-  host_hash_to_hosts_map = {
-    for index, item in var.routing:
-      sha256(jsonencode(sort(item.hosts))) => item.hosts
-  }
+  default_service_link = concat(
+    [
+      for index, item in local.backend_services:
+        format("https://www.googleapis.com/compute/v1/projects/%s/global/backendServices/%s", data.google_project.project.project_id, item.name)
+      if lower(var.default_backend[0]) == "service" && tostring(var.default_backend[1]) == tostring(index)
+    ],
+    [
+      for index, item in local.backend_buckets:
+        format("https://www.googleapis.com/compute/v1/projects/%s/global/backendBuckets/%s", data.google_project.project.project_id, item.name)
+      if lower(var.default_backend[0]) == "bucket" && tostring(var.default_backend[1]) == tostring(index)
+    ]
+  )[0]
 
   backend_services = [
-    for index, item in var.routing: {
-      name = format("%s-%s", var.name, substr(sha256(jsonencode(sort(item.hosts))), 0, 8))
-      targets = item.targets
+    for index, item in var.services: {
+      name = format("%s-service-%02d", var.name, index + 1)
+      hosts = item.hosts
       host_hash = sha256(jsonencode(sort(item.hosts)))
-      index = index
+      groups = item.groups
     }
-    if substr(item.targets[0], 0, 34) == "https://www.googleapis.com/compute"
   ]
 
   backend_buckets = [
-    for index, item in var.routing: {
-      name = format("%s-%s", var.name, substr(sha256(jsonencode(sort(item.hosts))), 0, 8))
-      target = item.targets[0]
+    for index, item in var.buckets: {
+      name = format("%s-bucket-%02d", var.name, index + 1)
+      hosts = item.hosts
       host_hash = sha256(jsonencode(sort(item.hosts)))
-      index = index
+      bucket = item.bucket
     }
-    if substr(item.targets[0], 0, 34) != "https://www.googleapis.com/compute"
   ]
 
   path_matchers = concat(
     [
       for index, item in local.backend_buckets: {
-        default_service = google_compute_backend_bucket.backend_bucket[index].self_link
         name = item.name
+        default_service = google_compute_backend_bucket.backend_bucket[index].self_link
       }
+      if length(item.hosts) > 0
     ],
     [
       for index, item in local.backend_services: {
-        default_service = google_compute_backend_service.backend_service[index].self_link
         name = item.name
+        default_service = google_compute_backend_service.backend_service[index].self_link
       }
+      if length(item.hosts) > 0
     ]
   )
 
   host_rules = concat(
     [
       for index, item in local.backend_buckets: {
-        hosts = local.host_hash_to_hosts_map[item.host_hash]
         path_matcher = item.name
+        hosts = item.hosts
       }
+      if length(item.hosts) > 0
     ],
     [
       for index, item in local.backend_services: {
-        hosts = local.host_hash_to_hosts_map[item.host_hash]
         path_matcher = item.name
+        hosts = item.hosts
       }
+      if length(item.hosts) > 0
     ]
   )
 }

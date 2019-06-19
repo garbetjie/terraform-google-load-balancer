@@ -17,8 +17,8 @@ resource google_compute_target_http_proxy http_proxy {
 }
 
 resource google_compute_url_map url_map {
-  default_service = local.default_service_link
   name = var.name
+  default_service = local.default_service_link
 
   dynamic "path_matcher" {
     for_each = local.path_matchers
@@ -45,7 +45,7 @@ resource google_compute_backend_service backend_service {
   health_checks = var.health_checks
 
   dynamic "backend" {
-    for_each = local.backend_services[count.index].targets
+    for_each = local.backend_services[count.index].groups
 
     content {
       group = backend.value
@@ -60,7 +60,7 @@ resource google_compute_backend_service backend_service {
 resource google_compute_backend_bucket backend_bucket {
   count = length(local.backend_buckets)
   name = local.backend_buckets[count.index].name
-  bucket_name = local.backend_buckets[count.index].target
+  bucket_name = local.backend_buckets[count.index].bucket
 
   lifecycle {
     create_before_destroy = true

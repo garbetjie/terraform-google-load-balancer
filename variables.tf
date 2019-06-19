@@ -1,13 +1,16 @@
 variable "name" {
   type = string
+  description = "Name of the load balancer (as displayed in the Google Cloud Console)."
 }
 
 variable "health_checks" {
   type = list
+  description = "Health checks to use on the backend services, to determine health of the service. Can only contain one health check."
 }
 
 variable "default_backend" {
   type = list
+  description = "Backend type and index to select as the default backend. Must be a list with the first index being one of `bucket` or `service`, and the second the index of the bucket or service designated as the default."
 }
 
 variable "address" {
@@ -17,11 +20,13 @@ variable "address" {
 variable "services" {
   type = list
   default = []
+  description = "List of objects used to define the backend services for the load balancer."
 }
 
 variable "buckets" {
   type = list
   default = []
+  description = "List of objects used to define the backend buckets for the load balancer."
 }
 
 
@@ -42,8 +47,7 @@ locals {
   backend_services = [
     for index, item in var.services: {
       name = format("%s-service-%02d", var.name, index + 1)
-      hosts = item.hosts
-      host_hash = sha256(jsonencode(sort(item.hosts)))
+      hosts = lookup(item, "hosts", [])
       groups = item.groups
     }
   ]
@@ -51,8 +55,7 @@ locals {
   backend_buckets = [
     for index, item in var.buckets: {
       name = format("%s-bucket-%02d", var.name, index + 1)
-      hosts = item.hosts
-      host_hash = sha256(jsonencode(sort(item.hosts)))
+      hosts = lookup(item, "hosts", [])
       bucket = item.bucket
     }
   ]

@@ -47,7 +47,6 @@ module load_balancer {
   
   name = "load-balancer" 
   default_backend = ["service", 0]  // or ["bucket", 1] for the bucket defined for "2.static.example.org".
-  health_checks = [google_compute_health_check.my_healthcheck]
   address = google_compute_global_address.my_address.address
   
   buckets = [
@@ -57,9 +56,9 @@ module load_balancer {
   ]
   
   services = [
-    { hosts = ["api.example.org", "example.org"], groups = [google_compute_instance_group.my_group.self_link] },
-    { hosts = ["2.api.example.org", "2.example.org"], groups = [google_compute_instance_group.my_group.self_link] },
-    { hosts = ["3.api.example.org", "3.example.org"], groups = [google_compute_instance_group.my_group.self_link] },
+    { hosts = ["api.example.org", "example.org"], groups = [google_compute_instance_group.my_group.self_link], health_check = google_compute_health_check.my_healthcheck },
+    { hosts = ["2.api.example.org", "2.example.org"], groups = [google_compute_instance_group.my_group.self_link], health_check = google_compute_health_check.my_healthcheck },
+    { hosts = ["3.api.example.org", "3.example.org"], groups = [google_compute_instance_group.my_group.self_link], health_check = google_compute_health_check.my_healthcheck },
   ]
 }
 ```
@@ -81,7 +80,6 @@ module load_balancer {
   
   name = "load-balancer" 
   default_backend = ["service", 0]
-  health_checks = [google_compute_health_check.my_healthcheck]
   address = google_compute_global_address.my_address.address
   
   buckets = [
@@ -91,9 +89,9 @@ module load_balancer {
   ]
   
   services = [
-    { hosts = ["api.example.org", "example.org"], groups = [google_compute_instance_group.my_group.self_link] },
-    { hosts = ["3.api.example.org", "3.example.org"], groups = [google_compute_instance_group.my_group.self_link] },
-    { hosts = [], groups = [google_compute_instance_group.my_group.self_link] },
+    { hosts = ["api.example.org", "example.org"], groups = [google_compute_instance_group.my_group.self_link], health_check = google_compute_health_check.my_healthcheck },
+    { hosts = ["3.api.example.org", "3.example.org"], groups = [google_compute_instance_group.my_group.self_link], health_check = google_compute_health_check.my_healthcheck },
+    { hosts = [], groups = [google_compute_instance_group.my_group.self_link], health_check = google_compute_health_check.my_healthcheck },
   ]
 }
 ```
@@ -108,7 +106,6 @@ module load_balancer {
   
   name = "load-balancer" 
   default_backend = ["service", 0]
-  health_checks = [google_compute_health_check.my_healthcheck]
   address = google_compute_global_address.my_address.address
   
   buckets = [
@@ -117,8 +114,8 @@ module load_balancer {
   ]
   
   services = [
-    { hosts = ["api.example.org", "example.org"], groups = [google_compute_instance_group.my_group.self_link] },
-    { hosts = ["3.api.example.org", "3.example.org"], groups = [google_compute_instance_group.my_group.self_link] },
+    { hosts = ["api.example.org", "example.org"], groups = [google_compute_instance_group.my_group.self_link], health_check = google_compute_health_check.my_healthcheck },
+    { hosts = ["3.api.example.org", "3.example.org"], groups = [google_compute_instance_group.my_group.self_link], health_check = google_compute_health_check.my_healthcheck },
   ]
 }
 ```
@@ -137,13 +134,12 @@ When this change has been applied, the load balancer can be removed.
 | Name                  | Description                                                                                                                                                                                                                                         | Type         | Default | Required |
 |-----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|---------|----------|
 | name                  | Name of the load balancer (as displayed in the Google Cloud Console)                                                                                                                                                                                | string       | n/a     | Yes      |
-| health_check          | Health check to use on the backend services, to determine health of the service. This health check is used if no health check is specified on a backend service. This is required if any of the backend services don't have a health check defined. | string       | `null`  | No       |
 | default_backend       | Backend type and index to select as the default backend. Must be a list with the first index being one of `bucket` or `service`, and the second the index of the bucket or service designated as the default.                                       | list         | n/a     | Yes      |
 | address               | IP address to assign to the load balancer.                                                                                                                                                                                                          | string       | n/a     | Yes      |
 | services              | List of objects used to define the backend services for the load balancer.                                                                                                                                                                          | list(object) | `[]`    | No       |
 | services.hosts        | HTTP hosts for which traffic should be sent to these groups.                                                                                                                                                                                        | list(string) | `[]`    | No       |
 | services.groups       | selfLinks of the instance groups to which traffic should be sent.                                                                                                                                                                                   | list(string) | n/a     | Yes      |
-| services.health_check | selfLink of a health check to use to determine this service's health. Defaults to `var.health_check` if not defined.                                                                                                                                | string       | `null`  | No       |
+| services.health_check | selfLink of a health check to use to determine this service's health.                                                                                                                                                                               | string       | n/a     | Yes      |
 | buckets               | List of objects used to define the backend buckets for the load balancer.                                                                                                                                                                           | list(object) | `[]`    | No       |
 | buckets.hosts         | HTTP hosts for which traffic should be sent to this bucket.                                                                                                                                                                                         | list(string) | `[]`    | No       |
 | buckets.bucket        | The name of the bucket to direct traffic to.                                                                                                                                                                                                        | string       | n/a     | Yes      |

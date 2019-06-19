@@ -73,6 +73,8 @@ they're assigned need to be emptied.
 Using the same example as in creating a load balancer (shown above), it would become (notice how the `2.static.example.org`
 and `["2.api.example.org", "2.example.org"]` hosts have been moved to the end, and emptied):
 
+#### Step 1: Empty the `hosts` properties.
+
 ```hcl
 module load_balancer {
   source = "garbetjie/load-balancer/google"
@@ -95,6 +97,8 @@ module load_balancer {
   ]
 }
 ```
+
+#### Step 2: Remove the service/bucket definitions.
 
 Once this change has been applied, you can then remove the services or buckets:
 

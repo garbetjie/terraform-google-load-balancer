@@ -4,7 +4,7 @@ variable "name" {
 }
 
 variable "default_backend" {
-  type = tuple(string, number)
+  type = tuple([string, number])
   description = "Backend type and index to select as the default backend. Must be a tuple with the first index being one of `bucket` or `service`, and the second the index of the bucket or service designated as the default."
 }
 
@@ -26,7 +26,9 @@ variable "buckets" {
 
 
 locals {
-  default_service_link = concat(
+  default_service_link = length(local.default_service_links) > 0 ? local.default_service_links[0] : ""
+
+  default_service_links = concat(
     [
       for index, item in local.backend_services:
         format("https://www.googleapis.com/compute/v1/projects/%s/global/backendServices/%s", data.google_project.project.project_id, item.name)
@@ -37,7 +39,7 @@ locals {
         format("https://www.googleapis.com/compute/v1/projects/%s/global/backendBuckets/%s", data.google_project.project.project_id, item.name)
       if lower(var.default_backend[0]) == "bucket" && tostring(var.default_backend[1]) == tostring(index)
     ]
-  )[0]
+  )
 
   backend_services = [
     for index, item in var.services: {

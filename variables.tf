@@ -4,8 +4,8 @@ variable "name" {
 }
 
 variable "default_backend" {
-  type = list
-  description = "Backend type and index to select as the default backend. Must be a list with the first index being one of `bucket` or `service`, and the second the index of the bucket or service designated as the default."
+  type = tuple(string, number)
+  description = "Backend type and index to select as the default backend. Must be a tuple with the first index being one of `bucket` or `service`, and the second the index of the bucket or service designated as the default."
 }
 
 variable "address" {
